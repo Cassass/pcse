@@ -28,7 +28,7 @@ uint16_t colonne_curseur = 0;
 uint16_t *ptr_mem(uint32_t lig, uint32_t col){
 	// on retourne ptr, a la postion de la case souhaitee
 	uint16_t* ptr;
-	ptr = (uint16_t *)(ADDR_VID + 2*(80*lig + col));
+	ptr = (uint16_t *)(ADDR_VID + 2*(NB_COLONNES*lig + col));
 	return ptr;
 }
 
@@ -46,8 +46,8 @@ void ecrit_car(uint32_t lig, uint32_t col, char c){
 
 void efface_ecran(void){
 	uint16_t* car_cour = ptr_mem(0,0);
-	for (int ligne = 0; ligne < 25; ligne++){
-		for (int colonne = 0; colonne < 80; colonne++){
+	for (int ligne = 0; ligne < NB_LIGNES; ligne++){
+		for (int colonne = 0; colonne < NB_COLONNES; colonne++){
 			//chaque "case" recoit un espace blanc dans un fond noir
 			*car_cour = WHITE_ON_BLACK;
 		}
@@ -56,7 +56,7 @@ void efface_ecran(void){
 
 void place_curseur(uint32_t lig, uint32_t col){
 	// calcul de la position
-	uint32_t pos_curseur = 80*lig + col;
+	uint32_t pos_curseur = NB_COLONNES*lig + col;
 	//actualisation variable globale
 	ligne_curseur = lig;
 	colonne_curseur = col;
@@ -76,9 +76,9 @@ void traite_car(char c){
 	// caracteres classiques : affichage simple
 	if ((uint8_t)c >= 32 && (uint8_t)c <= 126){
 		ecrit_car(c, ligne_curseur, colonne_curseur);
-		if(colonne_curseur != 79){
+		if(colonne_curseur != DERN_COL){
 			colonne_curseur++;
-		}else if(ligne_curseur !=24){
+		}else if(ligne_curseur !=DERN_LIGNE){
 			traite_car('\n');
 		}
 	}else if ((uint8_t)c == 8){
@@ -86,21 +86,21 @@ void traite_car(char c){
 		if (colonne_curseur != 0){
 			colonne_curseur--;
 		}else if(ligne_curseur !=0){
-			colonne_curseur = 79;
+			colonne_curseur = DERN_COL;
 			ligne_curseur--;
 		}
 	}else if ((uint8_t)c == 9){
 		uint16_t manque = 1;
 		// tant qu'on ne trouve pas la fin de la ligne
 		// ou la tabulation suivante...
-		while ((colonne_curseur+manque != 79) || 
+		while ((colonne_curseur+manque != DERN_COL) || 
 		       ((colonne_curseur+manque)%8 != 0)){
 			manque++; // ... on incremente
 		}
 		colonne_curseur += manque;
 	}else if ((uint8_t)c == 10){
 		// retour a la ligne si on est pas sur la derniere
-		if (ligne_curseur !=24){
+		if (ligne_curseur !=DERN_LIGNE){
 			ligne_curseur++;
 			colonne_curseur = 0;
 		}else{
@@ -118,17 +118,17 @@ void traite_car(char c){
 }
 
 void defilement(void){
-	uint16_t* src = (uint16_t *)(ADDR_VID + 2*80); // on deplace les lignes 1 à 24...
+	uint16_t* src = (uint16_t *)(ADDR_VID + 2*NB_COLONNES); // on deplace les lignes 1 à DERN_LIGNE...
 	uint16_t* dest = (uint16_t *)ADDR_VID; // ...dans 0 à 23
-	memmove(dest, src, 2*80*25);
+	memmove(dest, src, 2*NB_COLONNES*NB_LIGNES);
 	//des blancs dans la derniere ligne
-	uint16_t* car_cour = ptr_mem(24,0);
-	for (int colonne = 0; colonne < 80; colonne++){
+	uint16_t* car_cour = ptr_mem(DERN_LIGNE,0);
+	for (int colonne = 0; colonne < NB_COLONNES; colonne++){
 		//chaque "case" recoit un espace blanc dans un fond noir
 		*car_cour = WHITE_ON_BLACK;
 	}
 	//on replace le curseur en début de ligne
-	ligne_curseur = 24;
+	ligne_curseur = DERN_LIGNE;
 	colonne_curseur = 0;
 	place_curseur(ligne_curseur, colonne_curseur);
 }
