@@ -66,7 +66,7 @@ void set_clock(void){
 	// on fait un décalage bits à bits pour envoyer les poids forts
 }
 
-void masque_irq(uint32_t num_IRQ, bool masque){
+void masque_IRQ(uint32_t num_IRQ, bool masque){
 	uint8_t m = inb(0x21);
 	bool tab_bool[8]; // 8 numeros d'IRQ
 	// un peu sale, il doit y avoir plus joli
