@@ -9,7 +9,7 @@
 #define STACK_SIZE 512
 
 typedef enum Etat Etat;
-enum Etat {ELU, ACTIVABLE, ENDORMI};
+enum Etat {ELU, ACTIVABLE};
 
 typedef struct processus{
 	int8_t pid;
